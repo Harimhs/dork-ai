@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#030507">
+  <title>Dork Assistant</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="assistant.css?v=3">
+  <script type="importmap">
+    { "imports": { "three": "/vendor/three/three.module.min.js", "three/addons/": "/vendor/three/addons/" } }
+  </script>
+</head>
+<body class="sleeping">
+  <canvas id="reactor" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scan" aria-hidden="true"></div>
+
+  <header class="hud-top">
+    <div class="brand"><span class="wm">dork</span><span class="cur"></span></div>
+    <div class="hud-meta mono">
+      <span id="state-label">STANDBY</span>
+      <span class="sep"></span>
+      <span id="clock"></span>
+    </div>
+    <div class="hud-right">
+      <button id="btn-full" class="ic" title="Full screen (F)" aria-label="Full screen"><i data-icon="expand"></i></button>
+      <button id="btn-hide" class="ic" title="Hide (Esc)" aria-label="Hide"><i data-icon="minus"></i></button>
+    </div>
+  </header>
+
+  <aside class="hud-left mono" aria-label="Status">
+    <div class="row"><span class="k">EARS</span><span id="st-ears" class="v">—</span></div>
+    <div class="row"><span class="k">VOICE ID</span><span id="st-voice" class="v">—</span></div>
+    <div class="row"><span class="k">GUARD</span><span id="st-guard" class="v">off</span></div>
+    <div class="row"><span class="k">LINK</span><span id="st-link" class="v">—</span></div>
+  </aside>
+
+  <main class="captions" aria-live="polite">
+    <p id="cap-status" class="cap-status mono"></p>
+    <p id="cap-you" class="cap-you"></p>
+    <p id="cap-dork" class="cap-dork"></p>
+  </main>
+
+  <section id="enroll" class="enroll hidden" aria-live="polite">
+    <div class="enroll-head mono"><span>VOICEPRINT</span><span id="enroll-name"></span></div>
+    <div id="enroll-steps" class="enroll-steps"></div>
+  </section>
+
+  <footer class="dock">
+    <button id="btn-type" class="ic" title="Type instead" aria-label="Type"><i data-icon="keyboard"></i></button>
+    <button id="btn-mic" class="mic" title="Talk (Space)" aria-label="Talk"><i data-icon="mic"></i><span class="ring"></span></button>
+    <button id="btn-chat" class="ic" title="Open chat" aria-label="Open chat"><i data-icon="chat"></i></button>
+    <form id="type-form" class="type-form hidden" autocomplete="off">
+      <input id="type-input" placeholder="Tell Dork…" maxlength="2000" enterkeyhint="send">
+      <button class="ic" aria-label="Send"><i data-icon="send"></i></button>
+    </form>
+  </footer>
+
+  <audio id="voice-out" preload="auto"></audio>
+  <script type="module" src="assistant.js?v=7"></script>
+</body>
+</html>

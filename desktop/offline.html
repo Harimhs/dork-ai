@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dork</title>
+  <style>
+    :root { --bg: #0e0f11; --text: #ecebe8; --muted: #71767e; --line: #33363c; --accent: #e9a23b; color-scheme: dark; }
+    @media (prefers-color-scheme: light) { :root { --bg: #f4f3ef; --text: #1b1b1a; --muted: #7a7973; --line: #c9c7bf; --accent: #b06b0e; color-scheme: light; } }
+    html, body { height: 100%; margin: 0; }
+    body { background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+      display: grid; place-items: center; -webkit-app-region: drag; }
+    .card { max-width: 380px; padding: 16px; -webkit-app-region: no-drag; }
+    .logo { font: 600 34px/1 "Cascadia Mono", Consolas, monospace; display: inline-flex; align-items: center; }
+    .cursor { display: inline-block; width: .55em; height: 1.05em; margin-left: 3px; background: var(--accent); animation: blink 1s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    p { color: var(--muted); margin: 18px 0; }
+    code { font: 13px "Cascadia Mono", Consolas, monospace; color: var(--text); }
+    button { font: inherit; font-weight: 600; height: 38px; padding: 0 18px; border-radius: 8px; border: 0; cursor: pointer;
+      background: var(--text); color: var(--bg); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">dork<span class="cursor"></span></div>
+    <p>Can't reach Dork at <code id="server"></code>. Make sure the Dork PC is on and awake, and Tailscale is connected.</p>
+    <button onclick="location.href = new URLSearchParams(location.search).get('server')">Try again</button>
+  </div>
+  <script>document.getElementById("server").textContent = new URLSearchParams(location.search).get("server");</script>
+</body>
+</html>

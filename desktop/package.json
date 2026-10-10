@@ -1,0 +1,60 @@
+{
+  "name": "dork-desktop",
+  "productName": "Dork",
+  "version": "2.1.1",
+  "description": "Dork - personal AI assistant (desktop app)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "dist:mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "dev.hari.dork",
+    "productName": "Dork",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "icons/**",
+      "main.js",
+      "offline.html",
+      "preload.js"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "icons/dork.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Dork"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "icons/icon-512.png",
+      "executableName": "dork-desktop",
+      "maintainer": "Hari"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "icons/icon-512.png"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  }
+}

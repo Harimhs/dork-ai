@@ -1,0 +1,30 @@
+# --- personal data and secrets: NEVER commit (config.json holds API keys; dork.db holds chats, memories, voiceprints)
+data/
+*.token
+.env
+.env.*
+
+# --- downloaded at setup time (too big for git; scripts/setup.py fetches them)
+models/
+runtime/
+*.gguf
+*.onnx
+*.bin
+
+# --- Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# --- desktop app build output
+desktop/node_modules/
+desktop/dist/
+
+# --- local leftovers
+backups/
+tests/_data/
+tests/_turns/
+tests/cpp/*.exe
+*.log
+*.part

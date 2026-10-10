@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#0e0f11" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4f3ef" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Dork">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Dork</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="stylesheet" href="style.css?v=26">
+</head>
+<body>
+  <!-- Lock: connect this device (code from a signed-in device, or the master key) -->
+  <section id="lock" class="lock hidden">
+    <div class="lock-card">
+      <div class="logo logo-lg">dork<span class="cursor"></span></div>
+
+      <form id="lock-connect" class="stack" autocomplete="off">
+        <p class="lead">Connect this device to Dork.</p>
+        <label class="field">
+          <span class="label">Name this device</span>
+          <input id="lock-device" type="text" maxlength="60" placeholder="e.g. Poco phone">
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Connect</button>
+      </form>
+
+      <form id="lock-code" class="stack hidden" autocomplete="off">
+        <p class="lead">A 6-digit code is now showing on your signed-in Dork. Enter it here.</p>
+        <label class="field">
+          <span class="label">Code</span>
+          <input id="lock-code-input" class="mono code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" required>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Connect</button>
+        <button type="button" id="lock-restart" class="btn-text">Get a new code</button>
+      </form>
+
+      <form id="lock-form" class="stack hidden" autocomplete="off">
+        <p class="lead">Unlock with your master key.</p>
+        <label class="field">
+          <span class="label">Master key</span>
+          <input id="lock-key" type="password" class="mono key-input" autocapitalize="characters" spellcheck="false" required>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Unlock</button>
+      </form>
+
+      <p id="lock-error" class="error"></p>
+      <button type="button" id="retry" class="btn btn-outline btn-block hidden">Try again</button>
+      <button type="button" id="lock-switch" class="btn-text lock-switch">Use master key instead</button>
+    </div>
+  </section>
+
+  <section id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="side-head">
+        <div class="logo"><span id="logo-text">dork</span><span id="logo-cursor" class="cursor"></span></div>
+      </div>
+
+      <div class="threads-head">
+        <span class="label">Threads</span>
+        <span class="threads-tools">
+          <button id="open-switcher" class="btn-text" title="Search (Ctrl+K)"><i data-icon="search"></i></button>
+          <button id="new-chat" class="btn-text"><i data-icon="plus"></i>New</button>
+        </span>
+      </div>
+      <nav id="conv-list" class="conv-list" aria-label="Threads"></nav>
+
+      <div class="side-foot">
+        <a href="/assistant" class="nav-item"><i data-icon="reactor"></i>Voice assistant</a>
+        <button id="install-app" class="nav-item hidden"><i data-icon="download"></i>Install app</button>
+        <button id="open-settings" class="nav-item"><i data-icon="settings"></i>Settings</button>
+      </div>
+    </aside>
+    <div id="scrim" class="scrim"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menu" class="icon-btn only-mobile" aria-label="Threads"><i data-icon="menu"></i></button>
+        <button id="conv-title" class="conv-title" title="Rename thread">New thread</button>
+        <a href="/assistant" class="icon-btn" aria-label="Voice assistant" title="Voice assistant"><i data-icon="reactor"></i></a>
+        <button id="new-chat-top" class="icon-btn only-mobile" aria-label="New thread"><i data-icon="plus"></i></button>
+      </header>
+
+      <div id="messages" class="messages"></div>
+
+      <div id="voice-bar" class="voice-bar hidden"><span class="vb-dot"></span><span id="voice-state"></span><button id="voice-stop" class="btn-text" type="button">Stop</button></div>
+      <form id="composer" class="composer">
+        <div class="composer-inner">
+          <textarea id="input" rows="1" placeholder="Ask Dork anything" enterkeyhint="send"></textarea>
+          <button id="mic" type="button" class="mic" aria-label="Talk to Dork" title="Talk (Ctrl+Space)"><span class="ring"></span><i data-icon="mic"></i></button>
+          <button id="send" type="submit" class="send" aria-label="Send"><i data-icon="arrowUp"></i></button>
+        </div>
+      </form>
+    </main>
+  </section>
+
+  <!-- A new device wants in: its code shows on signed-in devices -->
+  <div id="pair-modal" class="modal hidden" role="dialog" aria-label="Device wants to connect">
+    <div class="modal-card">
+      <span class="label">Connection request</span>
+      <h2 id="pair-name"></h2>
+      <p class="hint">Enter this code on that device. Only do this if it's yours.</p>
+      <div id="pair-code" class="pair-code mono"></div>
+      <p id="pair-expiry" class="hint mono"></p>
+      <div class="row-end">
+        <button id="pair-deny" class="btn btn-outline">Deny</button>
+        <button id="pair-hide" class="btn btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick switcher (Ctrl+K) -->
+  <div id="switcher" class="modal top hidden" role="dialog" aria-label="Search">
+    <div class="switcher-card">
+      <div class="sw-search"><i data-icon="search"></i><input id="switcher-input" placeholder="Search threads or jump to…" autocomplete="off"><kbd class="mono">esc</kbd></div>
+      <div id="switcher-list" class="sw-list"></div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <aside id="settings-panel" class="sheet hidden" aria-label="Settings">
+    <div class="sheet-card">
+      <header class="sheet-head">
+        <h2>Settings</h2>
+        <button class="icon-btn close" aria-label="Close"><i data-icon="x"></i></button>
+      </header>
+      <nav class="tabs" role="tablist">
+        <button data-tab="profile" class="active">Profile</button>
+        <button data-tab="memory">Memory</button>
+        <button data-tab="web">Web</button>
+        <button data-tab="voice">Voice</button>
+        <button data-tab="devices">Devices</button>
+        <button data-tab="security">Security</button>
+      </nav>
+
+      <section class="tab" data-tab="profile">
+        <div class="block">
+          <div class="block-head"><h3>About you</h3><span class="label">used in every thread</span></div>
+          <form id="profile-form" class="stack">
+            <div class="row">
+              <label class="field"><span class="label">Name</span><input id="pf-name" maxlength="100"></label>
+              <label class="field"><span class="label">Call me</span><input id="pf-call" maxlength="100" placeholder="optional"></label>
+            </div>
+            <label class="field"><span class="label">About you</span>
+              <textarea id="pf-about" rows="3" maxlength="3000" placeholder="Work, studies, interests, how you like help"></textarea>
+            </label>
+            <label class="switch"><input type="checkbox" id="pf-learn"><span class="track"></span>Learn about me from chats</label>
+            <div class="row-end">
+              <span id="pf-msg" class="hint"></span>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+          <label class="dropzone">
+            <i data-icon="upload"></i>
+            <span><strong>Upload about me</strong><span class="hint" id="pf-upload-msg">Resume, bio or notes. .txt .md .pdf</span></span>
+            <input type="file" id="pf-file" accept=".txt,.md,.pdf" hidden>
+          </label>
+          <div class="gathered">
+            <div class="gathered-head">
+              <span class="label">What Dork has learned</span>
+              <button id="pf-refresh" type="button" class="btn-text">Rewrite</button>
+            </div>
+            <div id="pf-gathered" class="gathered-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab hidden" data-tab="memory">
+        <div class="block">
+          <div class="block-head"><h3>Memories</h3><span id="mem-count" class="label"></span></div>
+          <p class="hint">Everything Dork remembers, filed by topic. Dork adds branches as new people, projects and interests come up.</p>
+          <form id="memory-form" class="stack teach">
+            <input id="memory-input" placeholder="Teach Dork something, e.g. My sister Priya is studying medicine" maxlength="1000" required>
+            <div class="row">
+              <input id="memory-path" list="memory-paths" placeholder="Branch (optional), e.g. People / Family / Sister (Priya)" maxlength="200">
+              <datalist id="memory-paths"></datalist>
+              <button type="submit" class="btn btn-outline">Add</button>
+            </div>
+          </form>
+          <div id="memory-list" class="list"></div>
+        </div>
+      </section>
+
+      <section class="tab hidden" data-tab="web">
+        <div class="block">
+          <div class="block-head"><h3>Web lookups</h3><span class="label">this device</span></div>
+          <div class="choices" role="radiogroup" aria-label="Web lookups">
+            <label class="choice"><input type="radio" name="web" value="auto"><span><strong>Automatic</strong><span class="hint">Dork looks things up when a question needs fresh information.</span></span></label>
+            <label class="choice"><input type="radio" name="web" value="on"><span><strong>Always</strong><span class="hint">Check the web for every message.</span></span></label>
+            <label class="choice"><input type="radio" name="web" value="off"><span><strong>Off</strong><span class="hint">Answer only from what Dork already knows.</span></span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab hidden" data-tab="voice">
+        <div class="block">
+          <div class="block-head"><h3>Dork speaks</h3><span class="label">this device</span></div>
+          <div class="choices" role="radiogroup" aria-label="When Dork speaks">
+            <label class="choice"><input type="radio" name="speak" value="voice"><span><strong>When I talk</strong><span class="hint">Spoken replies when you use the mic; text stays silent.</span></span></label>
+            <label class="choice"><input type="radio" name="speak" value="always"><span><strong>Always</strong><span class="hint">Read every reply out loud.</span></span></label>
+            <label class="choice"><input type="radio" name="speak" value="never"><span><strong>Never</strong><span class="hint">Use the Listen button on a reply when you want it.</span></span></label>
+          </div>
+          <label class="switch"><input type="checkbox" id="vc-continuous"><span class="track"></span>Keep listening after Dork answers (hands-free conversation)</label>
+        </div>
+        <div class="block">
+          <div class="block-head"><h3>Microphone</h3><span class="label">desktop app</span></div>
+          <select id="vc-mic" aria-label="Microphone"><option value="">System default</option></select>
+          <p class="hint">Wearing a headset? Pick its microphone so Dork hears you clearly.</p>
+        </div>
+        <div class="block">
+          <div class="block-head"><h3>I speak</h3></div>
+          <div class="choices" role="radiogroup" aria-label="Voice input language">
+            <label class="choice"><input type="radio" name="hear" value="en-IN"><span><strong>English (India)</strong><span class="hint">Handles Indian accents and names; a little Tanglish is fine.</span></span></label>
+            <label class="choice"><input type="radio" name="hear" value="ta-IN"><span><strong>Tamil</strong><span class="hint">தமிழில் பேசுங்கள்.</span></span></label>
+          </div>
+          <p class="hint">Dork answers in everyday speech, and with a more expressive voice when there's a laugh, a sigh or excitement in the reply. Without internet it falls back to an offline English voice.</p>
+        </div>
+      </section>
+
+      <section class="tab hidden" data-tab="devices">
+        <div class="block">
+          <div class="block-head"><h3>Connect a new device</h3></div>
+          <p class="hint">Open Dork on the new device and tap Connect. A 6-digit code appears here; type it on that device.</p>
+          <div id="pair-list" class="list"></div>
+        </div>
+        <div class="block">
+          <div class="block-head"><h3>Connected devices</h3><span class="label">remove anything unfamiliar</span></div>
+          <div id="device-list" class="list"></div>
+        </div>
+      </section>
+
+      <section class="tab hidden" data-tab="security">
+        <div class="block">
+          <div class="block-head"><h3>Master key</h3><span class="label">changing it signs out every device</span></div>
+          <form id="key-form" class="stack">
+            <label class="field"><span class="label">Current key</span><input id="key-current" type="password" class="mono" required></label>
+            <label class="field"><span class="label">New key</span><input id="key-new" type="password" class="mono" minlength="8" required placeholder="at least 8 characters"></label>
+            <div class="row-end">
+              <span id="key-msg" class="error"></span>
+              <button type="submit" class="btn btn-outline">Change key</button>
+            </div>
+          </form>
+        </div>
+        <div class="block">
+          <button id="logout" class="btn btn-danger"><i data-icon="logout"></i>Disconnect this device</button>
+        </div>
+        <p id="about" class="hint mono about"></p>
+      </section>
+    </div>
+  </aside>
+
+  <script src="app.js?v=26"></script>
+</body>
+</html>
